@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"github.com/kj187/aws-utility/commands"
+	"github.com/fatih/color"
 )
 
 func main() {
@@ -18,11 +19,11 @@ func main() {
 	`)
 
 	if os.Getenv("AWS_ACCESS_KEY_ID") == "" {
-		fmt.Println("No AWS_ACCESS_KEY_ID env var available!")
+		color.Red("No AWS_ACCESS_KEY_ID env var available!")
 		return
 	}
 	if os.Getenv("AWS_SECRET_ACCESS_KEY") == "" {
-		fmt.Println("No AWS_SECRET_ACCESS_KEY env var available!")
+		color.Red("No AWS_SECRET_ACCESS_KEY env var available!")
 		return
 	}
 

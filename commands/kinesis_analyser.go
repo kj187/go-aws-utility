@@ -2,15 +2,14 @@ package commands
 
 import (
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/kj187/aws-utility/aws/kinesis"
-	"github.com/fatih/color"
 	"github.com/apcera/termtables"
 	"github.com/gosuri/uiprogress"
+	"github.com/kj187/aws-utility/interact"
 )
 
 func init() {
@@ -18,7 +17,7 @@ func init() {
 }
 
 var kinesisStreamAnalyserCmd = &cobra.Command{
-	Use: "kinesis:stream:analyse",
+	Use: "kinesis:stream:analyser",
 	Short: "Analyse a Kinesis stream",
 	Run: func(cmd *cobra.Command, args []string) {
 		streamAnalyse()
@@ -29,25 +28,13 @@ func streamAnalyse() {
 	fmt.Println("AWS Kinesis Stream Analyser\n")
 	fmt.Println("-----------------------------------------------------\n")
 
-	fmt.Println("Available streams:")
-	streams, keys := kinesis.GetStreams()
-	for _, k := range keys {
-		key := color.GreenString("[" + strconv.Itoa(k) + "]")
-		fmt.Println(key, streams[k])
-	}
-
-	var input int
-	fmt.Print("\nPlease select a stream: ")
-	fmt.Scanln(&input)
-
-	if _, ok := streams[input]; ok { } else {
-		fmt.Println("Stream not available!")
+	stream, err := interact.AskForKinesisStream()
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
-	fmt.Println("\nSelected stream: ", streams[input])
-
-	shardIds, keys := kinesis.GetShardIds(streams[input])
+	shardIds, keys := kinesis.GetShardIds(stream)
 
 	fmt.Println("Shards in stream: ", len(shardIds))
 	fmt.Println("")
@@ -69,7 +56,7 @@ func streamAnalyse() {
 	for _, k := range keys {
 		wg.Add(1)
 
-		recordCount := kinesis.GetShardRecordCount(shardIds[k], streams[input])
+		recordCount := kinesis.GetShardRecordCount(shardIds[k], stream)
 		recordsInStream = recordsInStream + recordCount
 		table.AddRow(shardIds[k], recordCount)
 
